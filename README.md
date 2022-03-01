@@ -35,7 +35,8 @@ password: esp8266
 
 Key Features:
 ---------------------------------
-* HTTP and HTTPs webserver and message baord web interface Ability to send messages via automation systems or scripts using uri parameters or via json small api
+* HTTP and HTTPs webserver and message baord web interface
+* Ability to send messages via automation systems or scripts using uri parameters or via json small api
 * Parameter to specify numer of message scroll repeats
 * Parameter to specify optional Buzzer sound with each start of message
 * Parameter to specify delay in millisend to speed up or slow down scrolling of text
