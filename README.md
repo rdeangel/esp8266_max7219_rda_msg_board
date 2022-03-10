@@ -94,7 +94,7 @@ Project Case Example 2
 ![example_b3](images/example_b3.jpg)
 
 
-Message Parameters:
+URL Parameters:
 ---------------------------------
 ```
 MSG -> Message to display on dot matrix
