@@ -36,14 +36,14 @@ password: esp8266
 Key Features:
 ---------------------------------
 * HTTP and HTTPs webserver and message baord web interface
-* Ability to send messages via automation systems or scripts using uri parameters or via json small api
+* Ability to send messages via automation systems or scripts using url parameters or via json small api
 * Parameter to specify numer of message scroll repeats
 * Parameter to specify optional Buzzer sound with each start of message
 * Parameter to specify delay in millisend to speed up or slow down scrolling of text
-* It uses the WifiManager library to provide a webpage to configure wifi SSID and Password when one hasn't been previously configured
 * Support for UTF8 Extended ASCII Characters (see https://www.utf8-chartable.de/)
-* Change HTTP/HTTPs credentials and store in EEPROM
-* ESP8266 Reset button used to reset HTTP/HTTPs credentials as well as previously confiugred Wifi SSID
+* It uses the WifiManager library to provide a webpage to configure wifi SSID and Password when one hasn't been previously configured
+* Change HTTP/HTTPs credentials and store them in config file (LittleFS)
+* ESP8266 Reset (flash) button used to reset HTTP/HTTPs credentials as well as previously confiugred Wifi SSID
 
 
 UTF8 Extended ASCII Characters
@@ -73,6 +73,8 @@ Web Interface
 
 ![update_firmware](images/update_firmware.jpg)
 
+Here you can upload the compiled binary to update the firmware
+
 
 
 Project Case Example 1
@@ -92,6 +94,16 @@ Project Case Example 2
 ![example_b3](images/example_b3.jpg)
 
 
+Message Parameters:
+---------------------------------
+```
+MSG -> Message to display on dot matrix
+REP -> Number of times the message scrolls vertically across the dot matrix
+BUZ -> Number of times the buzzer makes a sound (chirps) in repeated succession
+DEL -> Delay in millisecond for each scrolling step
+ASC -> ASCII coversion to enable correct translation of UTF8 Extended ASCII Characters
+```
+
 
 Send Messages using curl:
 ---------------------------------
@@ -106,7 +118,7 @@ curl --user admin:esp8266 -X GET -G -s -o /dev/null 'http://192.168.1.11/arg' --
 ```
 curl --user admin:esp8266 -X GET -G -s -o /dev/null 'http://192.168.1.11/arg?MSG=This+is+a+test+message%21&REP=1&BUZ=3&DEL=30&ASC=1'
 ```
-#see https://www.url-encode-decode.com/
+see https://www.url-encode-decode.com/
 
 
 Send messages from Home Assistant:
