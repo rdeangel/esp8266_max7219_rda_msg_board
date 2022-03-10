@@ -1,4 +1,4 @@
-//MAX7219 RDA Message Board - Version 2.2.0
+//MAX7219 RDA Message Board - Version 2.3.0
 //Tested on "ESP8266 Boards (3.0.2) / NodeMCU 1.0 (ESP12E-Module)"
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
@@ -6,8 +6,9 @@
 #include <WiFiManager.h>
 #include <EasyButton.h>
 #include <stdio.h>
-#include <ArduinoJson.h>
-#include <EEPROM.h> 
+#include <ArduinoJson.h> 
+#include "FS.h"
+#include <LittleFS.h>
 
 //Define HTTP_SERVER and HTTPS_SERVER to start enable the respective web servers individually
 //At least one of the two servers needs to be set to 1 to communicate with the message board
@@ -88,6 +89,14 @@ MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 // Arduino pin where the button is connected to.
 #define FLASH_BUTTON 0
 
+const char *configfile  = "/config.txt"; // config file
+
+struct Config {
+  char usernameHolder[USERPASSSIZE];
+  char passwordHolder[USERPASSSIZE];
+};
+
+Config config; // config object
 
 uint8_t degC[] = { 5, 3, 3, 56, 68, 68, 68 }; // Deg C
 uint8_t degF[] = { 6, 3, 3, 124, 20, 20, 4 }; // Deg F
@@ -111,15 +120,9 @@ EasyButton flash_button(FLASH_BUTTON);
 const char* ap_mode_ssid = "RDA-MSG-BOARD";
 const char* ap_mode_password = "wifi-setup";
 
-//HTTP and HTTPS Authentication if not stored in EEPROM
+//HTTP and HTTPS Default Authentication to store in config file
 char www_username[USERPASSSIZE] = "admin";
 char www_password[USERPASSSIZE] = "esp8266";
-char is_saved;
-
-//USERNAME AND PASSWORD EEPROM MEMORY INDEX
-int addr_www_username = 0;     // username index
-int addr_www_password = USERPASSSIZE;    // password index
-int addr_is_saved = USERPASSSIZE*2;    // is saved index
  
 // allows you to set the realm of authentication Default:"Login Required"
 const char* www_realm = "Custom Auth Realm";
@@ -507,79 +510,106 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 void onPressed() {
   Serial.println("\nFlash button has been pressed, Erasing Credential and Resetting.");
   
-  for (int i = 0; i < 512; i++) {
-    EEPROM.write(i, 0);
-  }
-  EEPROM.commit();
+  LittleFS.remove(configfile);
   delay(500);
   WiFi.disconnect();
   delay(2000);
   ESP.restart();
 }
 
-void readCredentialsEEPROM() {
-  String stored_www_username;
-  String stored_www_password;
+// Loads the configuration from a file
+void loadConfiguration(const char *configfile, Config &config) {
 
-  //read username characters stored in EEPROM
-  for (int k = addr_www_username; k < addr_www_username + USERPASSSIZE; ++k) {
-    stored_www_username += char(EEPROM.read(k));
+  File file = LittleFS.open(configfile, "r");
+  if (!file) {
+    Serial.println("Failed to open data file");
+    return;
   }
-  
-  //read password characters stored in EEPROM
-  for (int l = addr_www_password; l < addr_www_password + USERPASSSIZE; ++l) {
-    stored_www_password += char(EEPROM.read(l));
-  }
-  
-  is_saved = char(EEPROM.read(addr_is_saved));
 
-  //define is username and password are stored in EEPROM or if default are to be used for HTTP Authentication
-  if(((stored_www_username == "") && (stored_www_password == "")) || (int(is_saved) != 1)) {
-    Serial.println("No Credentials stored");
-    Serial.printf("Use default username: \"%s\" and password: \"%s\"\n", www_username, www_password);
-  }
-  else {
-    stored_www_username.toCharArray(www_username, USERPASSSIZE);
-    stored_www_password.toCharArray(www_password, USERPASSSIZE);
-    Serial.println("Credentials stored in EEPROM");
-    Serial.printf("Use username: \"%s\" and password: \"%s\"\n", www_username, www_password);
-  }
+  // Allocate a temporary JsonDocument
+  // Don't forget to change the capacity to match your requirements.
+  // Use arduinojson.org/v6/assistant to compute the capacity.
+  StaticJsonDocument<512> doc;
+
+  // Deserialize the JSON document
+  DeserializationError error = deserializeJson(doc, file);
+  if (error)
+    Serial.println(F("Failed to read file, using default configuration"));
+
+  // Copy values from the JsonDocument to the Config
+  strlcpy(config.usernameHolder,                  // <- destination
+          doc["usernameHolder"],                  // <- source
+          sizeof(config.usernameHolder));         // <- destination's capacity
+  strlcpy(config.passwordHolder,                  // <- destination
+          doc["passwordHolder"],                  // <- source
+          sizeof(config.passwordHolder));         // <- destination's capacity
+
+  // Close the file (Curiously, File's destructor doesn't close the file)
+  file.close();
 }
 
-void writeCredentialsEEPROM() {
-  Serial.println("");
-  Serial.print("Write new Username at address "); Serial.println(addr_www_username);
-  Serial.print("");
-  for (int k = 0; k < USERPASSSIZE; ++k) {
-    EEPROM.write(addr_www_username + k, newUsername[k]);
-    Serial.print(newUsername[k]); Serial.print("");
+// Saves the configuration to a file
+void saveConfiguration(const char *configfile, const Config &config) {
+  // Delete existing file, otherwise the configuration is appended to the file
+  //LittleFS.remove(configfile);
+
+  // Open file for writing
+  File file = LittleFS.open(configfile, "w");
+  if (!file) {
+    Serial.println("Failed to open config file for writing");
+    return;
+  }
+  // Allocate a temporary JsonDocument
+  // Don't forget to change the capacity to match your requirements.
+  // Use arduinojson.org/assistant to compute the capacity.
+  StaticJsonDocument<512> doc;
+  
+  // Set the values in the document
+  doc["usernameHolder"] = config.usernameHolder;
+  doc["passwordHolder"] = config.passwordHolder;
+  
+  // Serialize JSON to file
+  if (serializeJson(doc, file) == 0) {
+    Serial.println(F("Failed to write to file"));
   }
   
-  Serial.println("");
-  Serial.print("Write new password at address "); Serial.println(addr_www_password);
-  Serial.print("");
-  for (int l = 0; l < USERPASSSIZE; l++) {
-    EEPROM.write(addr_www_password + l, newPassword[l]);
-    Serial.print(newPassword[l]); Serial.print("");
-  }
-  
-  Serial.println("");
-  Serial.print("Write credentials saved flag at address"); Serial.println(addr_is_saved);
-  Serial.print("");
-  EEPROM.write(addr_is_saved, 1);
-  Serial.print("1"); Serial.print("");
-  
-  Serial.println("");
-  if (EEPROM.commit()) {
-    Serial.println("Data successfully committed");
-    memcpy(www_username, newUsername, USERPASSSIZE);
-    memcpy(www_password, newPassword, USERPASSSIZE);
-  }
-  else {
-    Serial.println("ERROR! Data commit failed");
-  }
+  // Close the file
+  file.close();
 }
 
+// Prints the content of a file to the Serial
+void printFile(const char *configfile) {
+  // Open file for reading
+
+  File file = LittleFS.open(configfile, "r");
+  if (!file) {
+    Serial.println("Failed to open data file");
+    return;
+  }
+  // Extract each characters by one by one
+  while (file.available()) {
+    Serial.print((char)file.read());
+  }
+  Serial.println();
+
+  // Close the file
+  file.close();
+}
+
+//change login credentials and store into config file
+void changeLoginCredentials() {
+  //set username and password from webpage to config object
+  strlcpy(config.usernameHolder, newUsername, sizeof(config.usernameHolder));
+  strlcpy(config.passwordHolder, newPassword, sizeof(config.passwordHolder));
+  //save username and password from config object to config file
+  saveConfiguration(configfile, config);
+  //set the http/https credentials to the new password
+  strlcpy(www_username, config.usernameHolder, sizeof(www_username));
+  strlcpy(www_password, config.passwordHolder, sizeof(www_password));
+  // Dump config file
+  PRINTS("Username and Password changed\nPrinting config file:\n");
+  printFile(configfile);
+}
 
 //################################ START OF SPECIFIC HTTP SERVER FUNCTIONS ################################//
 #if HTTP_SERVER
@@ -823,11 +853,38 @@ void setup() {
   flash_button.begin();
   // Add the callback function to be called when the button is pressed.
   flash_button.onPressed(onPressed);
+ 
+  // Initialize LittleFS library
+  while (!LittleFS.begin()) {
+    Serial.println(F("Failed to initialize LittleFS library"));
+    delay(1000);
+  }
   
-  EEPROM.begin(512);
+  //load config stored in config file
+  Serial.println(F("Loading configuration..."));
+  loadConfiguration(configfile, config);
+  //if no username is defined in config file store default
+  if ((config.usernameHolder != NULL) && (config.usernameHolder[0] == '\0')) {
+    PRINT("no username set, setting default username: ", www_username);
+    strlcpy(config.usernameHolder, www_username, sizeof(config.usernameHolder));
+  }
+  //if no password is defined in config file store default
+  if ((config.passwordHolder != NULL) && (config.passwordHolder[0] == '\0')) {
+    PRINT("no password set, setting default password: ", www_password);
+    strlcpy(config.passwordHolder, www_password, sizeof(config.passwordHolder));
+  }
+  //set http/https server to config file defined values or defined default
+  strlcpy(www_username, config.usernameHolder, sizeof(www_username));
+  strlcpy(www_password, config.passwordHolder, sizeof(www_password));
+  
+  // Create configuration file
+  Serial.println(F("Saving configuration..."));
+  saveConfiguration(configfile, config);
 
-  readCredentialsEEPROM();
-
+  // Dump config file
+  Serial.println(F("Print config file..."));
+  printFile(configfile);
+  
 #if LED_HEARTBEAT
   pinMode(HB_LED, OUTPUT);
   digitalWrite(HB_LED, LOW);
@@ -912,7 +969,7 @@ void setup() {
       return serverHttp.requestAuthentication();
     }
     usernamePasswordHttp();
-    writeCredentialsEEPROM();
+	changeLoginCredentials();
     serverHttp.sendHeader("Connection", "close");
     serverHttp.send(200, "text/plain", "Username and Password updated!");
   });
@@ -1008,7 +1065,7 @@ void setup() {
       return serverHttps.requestAuthentication();
     }
     usernamePasswordHttps();
-    writeCredentialsEEPROM();
+	changeLoginCredentials();
     serverHttps.sendHeader("Connection", "close");
     serverHttps.send(200, "text/plain", "Username and Password updated!");
   });
@@ -1118,6 +1175,7 @@ void loop()
 #if HTTPS_SERVER
   serverHttps.handleClient();
 #endif
+
   flash_button.read();
 
   scrollTextParola();  
