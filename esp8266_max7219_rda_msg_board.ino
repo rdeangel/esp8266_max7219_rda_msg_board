@@ -29,11 +29,13 @@ void setup() {
   PRINTS("\n[MD_MAX72XX WiFi Message Display]\nType a message for the scrolling display from your internet browser");
 #endif
   Serial.println("");
-  
+
+#if ENABLE_FLASH_BUTTON
   flash_button.begin();
   // Add the callback function to be called when the button is pressed.
   flash_button.onPressed(onPressed);
-  
+#endif
+
   // Initialize LittleFS library
   while (!LittleFS.begin()) {
     Serial.println(F("Failed to initialize LittleFS library"));
@@ -136,5 +138,8 @@ void loop() {
 
   scrollTextParola(); 
 
-  //flash_button.read();
+#if ENABLE_FLASH_BUTTON
+  flash_button.read();
+#endif
+
 }

@@ -22,10 +22,21 @@ MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 #define WM_MDNS 1
 #define WM_DEBUG_LEVEL 0
 
-// Built button used to wipe device config
-#define FLASH_BUTTON 0
-// Instance of the button
-EasyButton flash_button(FLASH_BUTTON);
+//DEBUG ON OR OFF
+#define DEBUG 0
+#define PRINT_CALLBACK  0
+#define PAUSE_TIME  0
+
+//Flash button enabled/disaled
+#define ENABLE_FLASH_BUTTON 0
+
+#if ENABLE_FLASH_BUTTON
+  // Built button used to wipe device config
+  #define FLASH_BUTTON 0
+  // Instance of the button
+  EasyButton flash_button(FLASH_BUTTON);
+#endif
+
 
 // You must enable either "HTTP_SERVER" or "HTTPS_SERVER" to "1", or both.
 // Set "HTTPS_SERVER 1" below to enable http server.
@@ -166,10 +177,6 @@ int scrollDelay = atoi(scrollDelayDefault);
 int repeatCount = 0;
 IPAddress apModeIP;
 String apModeSSID;
-
-#define DEBUG 0
-#define PRINT_CALLBACK  0
-#define PAUSE_TIME  0
 
 #if DEBUG
 #define PRINT(s, v) { Serial.print(F(s)); Serial.print(v); }
