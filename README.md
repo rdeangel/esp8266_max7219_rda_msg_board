@@ -103,6 +103,53 @@ ASC -> ASCII coversion to enable correct translation of UTF8 Extended ASCII Char
 ```
 
 
+MQTT Topic Publishing/Subscribing
+---------------------------------
+If you enter the following Topic Prefix as part of your MQTT config the following log message can be seen from console if "#define DEBUG 1"
+Entering the topic prefix will register:
+```
+root_topic
+root_topic/json 
+root_topic/topic
+root_topic/topic/json
+mdns_name
+mdns_name/json
+and will also publish to "mdns_name/status" although this by default has no use
+```
+Example
+```
+Restoring MQTT connection...
+ESP-MSG-6A2F74 connected to MQTT Server: 192.168.1.100:1883
+Publishing to topic ESP-MSG-6A2F74/status: connected
+Subscribe to topic: rdadotmatrix
+Subscribe to topic: rdadotmatrix/json
+Subscribe to topic: rdadotmatrix/generic
+Subscribe to topic: rdadotmatrix/generic/json
+Subscribe to topic: ESP-MSG-ABCDEF
+Subscribe to topic: ESP-MSG-ABCDEF/json
+```
+
+Please Note:
+1. Any message published to a subscribed topic ending with /json will require a json message with the 5 parameters passed above.
+2. Any message published to a subscribed topic NOT ending with /json will take a message as a plain string with no additional parameter. (default parameters will be used for now hard coded, in future configurable I hope).
+
+it is also possible to use # for wildcard (at the end of a topic only), and + as part of a topic to indicate part of a topic path as a wildcard.
+
+for example if you configure topic prefix as rdadotmatrix/generic/# you would get the following topic subscriptions:
+```
+Restoring MQTT connection...
+ESP-MSG-ABCDEF connected to MQTT Server: 192.168.1.100:1883
+Publishing to topic ESP-MSG-6A2F74/status: connected
+Subscribe to topic: rdadotmatrix
+Subscribe to topic: rdadotmatrix/json
+Subscribe to topic: rdadotmatrix/generic/#
+Subscribe to topic: ESP-MSG-ABCDEF
+Subscribe to topic: ESP-MSG-ABCDEF/json
+```
+Please Note: even with a wildcard you would still be able to publish messages with parameters to a topic such as rdadotmatrix/generic/whatever/json or rdadotmatrix/generic/whatever/anotherlevel/json
+
+
+
 Send Messages using curl from cli:
 ---------------------------------
 ```
@@ -353,7 +400,7 @@ action:
 mode: single
 ```
 
-or if you are using MQTT
+or if you are using MQTT (not tested but should work)
 
 ```
 alias: Feed Reader To Matrix via MQTT
@@ -375,7 +422,8 @@ mode: single
 ```
 
 
-
 Send messages from NodeRed
 ---------------------------------
 Import file node_red_flow.json into nodered.
+
+Please Note: There are several subflow (look inside) and specific nodes need to be installed/imported in NodeRed.
