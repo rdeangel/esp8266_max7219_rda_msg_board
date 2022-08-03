@@ -30,7 +30,7 @@ username: admin
 password: esp8266
 
 ```
-***Please Note: Press the "FLASH" button on the ESP8266 or browse to /factoryreset to remove wifi http and mqtt credentials and reset the board (the "RST" button only restarts the board no changes)***
+***You can enable "#define ENABLE_FLASH_BUTTON 1" in 01_Shared.h to use the ESP FLASH button on the ESP8266 or browse to /factoryreset to reset username and password to admin/esp8266, wipe wifi and mqtt configuration and reset the board (the "RST" button only restarts the board no changes)***
 
 
 Key Features:
@@ -39,7 +39,9 @@ Key Features:
 * Send messages via HTTP using automation systems or scripts -> uri parameters or json small api
 * Send messages via MQTT Server (Authenticated or Anonymous)
 * Supper for UTF8 Extended ASCII Characters (see https://www.utf8-chartable.de/)
-* Change HTTP credentials
+* Change/Store HTTP credentials
+* Change/Store MQTT Config (enable/disable MQTT and connect/disconnect alerting)
+* MDNS Supported (browse and send messages via http to mdns name (eg. ESP-MSG-ABCDEF.local) or to selected IP address (future improvement ability to change hostname)
 * WifiManager provides a web portal to configure wifi SSID and Password when one hasn't been previously configured
 * Press ESP8266 FLASH button (or browse to /factoryreset) to wipe Wifi SSID Config, HTTP credentials and MQTT Setting.
 
