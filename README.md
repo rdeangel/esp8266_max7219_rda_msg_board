@@ -2,16 +2,16 @@ esp8266_max7219_rda_msg_board
 ============================================================
 MAX7219 RDA Message Board
 
-This is a feature rich ESP8266 based message board and it's a considerable improvement over the various basic implementaions out there.
+This is an ESP8266 based message board, and it has been mainly put togheter to display messages from remote systems (such as Home Assistant) using HTTP or MQTT.
 
-It has been mainly put togheter to display messages from remote systems (such as Home Assistant) using http or https as well.
+Please Note: HTTPS has been removed due to stability issues.
 
 
-Wifi Setup Mode on first start or reset (FLASH button press)
+Wifi Setup Mode on first start or reset (FLASH button press, or from URL /factoryreset)
 ---------------------------------
 You'll need to configure your wifi network by connecting to:
 ```
-WiFi SSID: RDA-MSG-BOARD
+WiFi SSID: ESP-MSG-ABCDEF  (where ABCDEF are the last 6 digit of mac address)
 Secret: wifi-setup
 ```
 If the browser doesn't open automatically (it should on recent OSes) browse to http://192.168.4.1 and click on "Configure Wifi" and click "Save".
@@ -20,7 +20,7 @@ The board will reboot and should now boot in "Wifi Message Mode".
 
 Connect to your wifi network and look for the IP the board obtained from DHCP (it should display it once at the end of the first message upon boot).
 
-I suggest statically assigning an IP on your DHCP so the board always uses the same IP and can be referenced easily. (especially if used in automations)
+I suggest statically assigning an IP on your DHCP so the board always uses the same IP and can be easily accessed. (This is not important for MQTT Messaging but it is for HTTP Web Interface/Messaging)
 
 
 Default username and password:
@@ -30,20 +30,18 @@ username: admin
 password: esp8266
 
 ```
-***Please Note: Press the "FLASH" button on the ESP8266 to reset wifi and http/https credentials and reset the board (the "RST" button only restarts the board no changes)***
+***Please Note: Press the "FLASH" button on the ESP8266 or browse to /factoryreset to remove wifi http and mqtt credentials and reset the board (the "RST" button only restarts the board no changes)***
 
 
 Key Features:
 ---------------------------------
-* HTTP and HTTPs webserver and message baord web interface
-* Ability to send messages via automation systems or scripts using url parameters or via json small api
-* Parameter to specify numer of message scroll repeats
-* Parameter to specify optional Buzzer sound with each start of message
-* Parameter to specify delay in millisend to speed up or slow down scrolling of text
-* Support for UTF8 Extended ASCII Characters (see https://www.utf8-chartable.de/)
-* It uses the WifiManager library to provide a webpage to configure wifi SSID and Password when one hasn't been previously configured
-* Change HTTP/HTTPs credentials and store them in config file (LittleFS)
-* ESP8266 Reset (flash) button used to reset HTTP/HTTPs credentials as well as previously confiugred Wifi SSID
+* HTTP webserver / message baord web interface
+* Send messages via HTTP using automation systems or scripts -> uri parameters or json small api
+* Send messages via MQTT Server (Authenticated or Anonymous)
+* Supper for UTF8 Extended ASCII Characters (see https://www.utf8-chartable.de/)
+* Change HTTP credentials
+* WifiManager provides a web portal to configure wifi SSID and Password when one hasn't been previously configured
+* Press ESP8266 FLASH button (or browse to /factoryreset) to wipe Wifi SSID Config, HTTP credentials and MQTT Setting.
 
 
 UTF8 Extended ASCII Characters
@@ -52,7 +50,7 @@ Character you can display as arguments
 ```
 !"$'()*,-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£€¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ
 ```
-Characters that can't always be send as part of a message:
+Characters that can't always be send as part of a message (with exception on nodered where all characters can be used):
 ```
 #%&+;
 ```
@@ -71,9 +69,9 @@ Web Interface
 
 ![password_change](images/password_change.jpg)
 
-![update_firmware](images/update_firmware.jpg)
+![mqtt_config](images/mqtt_config.jpg)
 
-Here you can upload the compiled binary to update the firmware
+![password_change](images/password_change.jpg)
 
 
 
@@ -94,36 +92,42 @@ Project Case Example 2
 ![example_b3](images/example_b3.jpg)
 
 
-URL Parameters:
+URL Argument / MQTT JSON Parameters:
 ---------------------------------
 ```
 MSG -> Message to display on dot matrix
-REP -> Number of times the message scrolls vertically across the dot matrix
+REP -> Number of times the message scrolls horizzontally across the dot matrix
 BUZ -> Number of times the buzzer makes a sound (chirps) in repeated succession
-DEL -> Delay in millisecond for each scrolling step
+DEL -> Delay in millisecond for each scrolling step (speed of scrolling message)
 ASC -> ASCII coversion to enable correct translation of UTF8 Extended ASCII Characters
 ```
 
 
-Send Messages using curl:
+Send Messages using curl from cli:
 ---------------------------------
 ```
-curl --user admin:esp8266 -X POST http://192.168.1.11/api -H 'Content-Type: application/json' -d '{"MSG":"This is a test message!","REP":"4","BUZ":"10","DEL":"30","ASC":"1"}'
+curl --user admin:esp8266 -X POST http://192.168.1.89/api -H 'Content-Type: application/json' -d '{"MSG":"This is a test message","REP":"4","BUZ":"10","DEL":"30","ASC":"1"}'
 ```
 
 ```
-curl --user admin:esp8266 -X GET -G -s -o /dev/null 'http://192.168.1.11/arg' --data-urlencode "MSG=This is a test message!" --data-urlencode "REP=4" --data-urlencode "BUZ=10" --data-urlencode "DEL=30" --data-urlencode "ASC=1"
+curl --user admin:esp8266 -X GET -G -s -o /dev/null 'http://192.168.1.89/arg' --data-urlencode "MSG=This is a test message" --data-urlencode "REP=4" --data-urlencode "BUZ=10" --data-urlencode "DEL=30" --data-urlencode "ASC=1"
 ```
 
 ```
-curl --user admin:esp8266 -X GET -G -s -o /dev/null 'http://192.168.1.11/arg?MSG=This+is+a+test+message%21&REP=1&BUZ=3&DEL=30&ASC=1'
+curl --user admin:esp8266 -X GET -G -s -o /dev/null 'http://192.168.1.89/arg?MSG=This+is+a+test+message%21&REP=4&BUZ=10&DEL=30&ASC=1'
 ```
-see https://www.url-encode-decode.com/
+
+You can also use this URL encoded link fromatting to send messages from a browser:
+```
+http://192.168.1.89/arg?MSG=This+is+a+test+message%21&REP=4&BUZ=10&DEL=30&ASC=1
+```
+see https://meyerweb.com/eric/tools/dencoder/ for URL encode and decode 
 
 
-Send messages from Home Assistant:
+
+Send Messages from Home assistant Dashboard Card:
 ---------------------------------
-***Please Note: you'll have to use the base64 encoded as the username:password***
+***Please Note: you'll have to use the base64 encoded as the username:password to send messages via HTTP***
 
 you should configure the following in your secrets.yaml file if you are using default credentials:
 
@@ -146,11 +150,14 @@ entities:
   - entity: input_text.dot_matrix_text
   - entity: input_select.dot_matrix_device_list
   - entity: input_text.dot_matrix_ip
+  - entity: input_select.rda_dot_matrix_mqtt_topic
   - entity: input_number.dot_matrix_msg_repeat
   - entity: input_number.dot_matrix_buzzer
   - entity: input_number.dot_matrix_scroll_delay
-  - entity: script.message_dot_matrix
-  - entity: script.clear_dot_matrix
+  - entity: script.message_dot_matrix_http
+  - entity: script.clear_dot_matrix_http
+  - entity: script.message_dot_matrix_mqtt
+  - entity: script.clear_dot_matrix_mqtt
 title: Message Boards Texting (MAX7219)
 ```
 
@@ -165,29 +172,17 @@ rest_command:
       authorization: !secret dot_matrix_secret_header
       content-type: "application/json"
     payload: "{MSG:'{{ states('input_text.dot_matrix_text') }}',REP:{{ states('input_number.dot_matrix_msg_repeat') }},BUZ:{{ states('input_number.dot_matrix_buzzer') }},DEL:{{ states('input_number.dot_matrix_scroll_delay') }},ASC:1}"
-  message_dot_matrix_arg_https:
-    url: "https://{{ states('input_text.dot_matrix_ip') }}/api"
-    method: POST
-    headers:
-      authorization: !secret dot_matrix_secret_header
-      content-type: "application/json"
-    payload: "{MSG:'{{ states('input_text.dot_matrix_text') }}',REP:{{ states('input_number.dot_matrix_msg_repeat') }},BUZ:{{ states('input_number.dot_matrix_buzzer') }},DEL:{{ states('input_number.dot_matrix_scroll_delay') }},ASC:1}"
-    verify_ssl: false
   clear_dot_matrix_arg_http:
     url: "http://{{ states('input_text.dot_matrix_ip') }}/arg?MSG=&REP={{ states('input_number.dot_matrix_msg_repeat') }}&BUZ={{ states('input_number.dot_matrix_buzzer') }}&DEL={{ states('input_number.dot_matrix_scroll_delay') }}&ASC=1"
     method: GET
     headers:
       authorization: !secret dot_matrix_secret_header
-  clear_dot_matrix_arg_https:
-    url: "https://{{ states('input_text.dot_matrix_ip') }}/arg?MSG=&REP={{ states('input_number.dot_matrix_msg_repeat') }}&BUZ={{ states('input_number.dot_matrix_buzzer') }}&DEL={{ states('input_number.dot_matrix_scroll_delay') }}&ASC=1"
-    method: GET
-    headers:
-      authorization: !secret dot_matrix_secret_header
-    verify_ssl: false
 ```
 
 
 3. if you have multiple message boards you can create an automations to switch IP address from the input_select list entity:
+
+automation.change_value_of_dot_matrix_input_text
 ```
 alias: Change Value of Dot Matrix Input Text
 description: ''
@@ -202,10 +197,10 @@ action:
     data_template:
       value: >
         {% if is_state('input_select.dot_matrix_device_list', 'Living Room') %}
-          192.168.1.11
+          192.168.1.88
         {% elif is_state('input_select.dot_matrix_device_list', 'Home Office')
         %}
-          192.168.1.12
+          192.168.1.89
         {% endif %}
 mode: single 
 ```
@@ -231,10 +226,49 @@ mode: single
 alias: Clear Dot Matrix
 ```
 
+5. For MQTT send message from home assistant, you can create the following script:
+
+script.message_dot_matrix_mqtt
+```
+alias: Message Dot Matrix MQTT
+sequence:
+  - service: mqtt.publish
+    data:
+      topic: '{{ states(''input_select.rda_dot_matrix_mqtt_topic'') }}'
+      payload: |-
+        { MSG: "{{ states('input_text.dot_matrix_text') }}",
+          REP: "{{ states('input_number.dot_matrix_msg_repeat') }}",
+          BUZ: "{{ states('input_number.dot_matrix_buzzer') }}", 
+          DEL: "{{ states('input_number.dot_matrix_scroll_delay') }}",
+          ASC: '1' 
+        }
+mode: single
+```
+
+6. To clear message queue:
+
+script.clear_dot_matrix_mqtt
+```
+alias: Clear Dot Matrix MQTT
+sequence:
+  - service: mqtt.publish
+    data:
+      topic: '{{ states(''input_select.rda_dot_matrix_mqtt_topic'') }}'
+      payload: |-
+        { MSG: "",
+          REP: "{{ states('input_number.dot_matrix_msg_repeat') }}",
+          BUZ: "{{ states('input_number.dot_matrix_buzzer') }}", 
+          DEL: "{{ states('input_number.dot_matrix_scroll_delay') }}",
+          ASC: '1' 
+        }
+mode: single
+```
 
 
+Home Assistant Feedreader
+---------------------------------
 
-You can also use home assistant RSS Feeds to send news text to the message board:
+You can also use home assistant RSS Feeds to send news text to the message board or even better NodeRed (which I prefer for this, I'll include below)
 
 1. enter some rss feeds like the below for example in your home assistant configuration.yaml
 ```
@@ -249,22 +283,12 @@ feedreader:
     minutes: 5
   max_entries: 5
 ```
-and 
+
+and an http call with arguments or json api again in configuration.yaml
 
 ```
 rest_command:
   ### some examples althought we'll use the first one for RSS feed automation below
-  feed_to_dot_matrix_arg_http:
-    url: "http://{{ipaddress}}/arg?MSG={{msg}}&REP={{rep}}&BUZ={{buz}}&DEL={{del}}&ASC=1"
-    method: GET
-    headers:
-      authorization: !secret dot_matrix_secret_header
-  feed_to_dot_matrix_arg_https:
-    url: "https://{{ipaddress}}/arg?&MSG={{msg}}&REP={{rep}}&BUZ={{buz}}&DEL={{del}}&ASC=1"
-    method: GET
-    headers:
-      authorization: !secret dot_matrix_secret_header
-    verify_ssl: false
   feed_to_dot_matrix_api_http:
     url: "http://{{ipaddress}}/api"
     method: POST
@@ -272,19 +296,36 @@ rest_command:
       authorization: !secret dot_matrix_secret_header
       content-type: "application/json"
     payload: "{MSG:'{{msg}}',REP:{{rep}},BUZ:{{buz}},DEL:{{del}},ASC:1}"
-  feed_to_dot_matrix_api_https:
-    url: "https://{{ipaddress}}/api"
-    method: POST
+  feed_to_dot_matrix_arg_http:
+    url: "http://{{ipaddress}}/arg?MSG={{msg}}&REP={{rep}}&BUZ={{buz}}&DEL={{del}}&ASC=1"
+    method: GET
     headers:
       authorization: !secret dot_matrix_secret_header
-      content-type: "application/json"
-    payload: "{MSG:'{{msg}}',REP:{{rep}},BUZ:{{buz}},DEL:{{del}},ASC:1}"
-    verify_ssl: false
 ```
 
-2. Then configuration an automation as follows if you have for example 2 different message boards and you want to send to both:
+or even better using MQTT configure a script
+Please Note: it is important you use /json at the end of the topic which no matter what is alwasy one of the MQTT topic the board subscribes to)
+
 ```
-alias: Feed Reader To Matrix
+alias: Feed To Dot Matrix MQTT
+sequence:
+- service: mqtt.publish
+  data:
+	topic: 'rdadotmatrix/json'
+	payload: |-
+		{ MSG: "{{msg}}",
+		  REP: "{{rep}}",
+		  BUZ: "{{buz}}", 
+		  DEL: "{{del}}",
+		  ASC: '1' 
+		}
+mode: single
+```
+
+
+2. Then configure an automation as follows if you have for example 2 different message boards and you want to send to both:
+```
+alias: Feed Reader To Matrix via HTTP
 description: ''
 trigger:
   - platform: event
@@ -293,7 +334,7 @@ condition: []
 action:
   - service: rest_command.feed_to_dot_matrix_api_http
     data:
-      ipaddress: 192.168.1.11
+      ipaddress: 192.168.1.88
       msg: >-
         News Feed: {{ trigger.event.data.title }}.... {{
         trigger.event.data.summary }}
@@ -302,7 +343,28 @@ action:
       del: 30
   - service: rest_command.feed_to_dot_matrix_api_http
     data:
-      ipaddress: 192.168.1.12
+      ipaddress: 192.168.1.89
+      msg: >-
+        News Feed: {{ trigger.event.data.title }}.... {{
+        trigger.event.data.summary }}
+      rep: 10
+      buz: 5
+      del: 30
+mode: single
+```
+
+or if you are using MQTT
+
+```
+alias: Feed Reader To Matrix via MQTT
+description: ''
+trigger:
+  - platform: event
+    event_type: feedreader
+condition: []
+action:
+  - service: script.feed_to_dot_matrix_mqtt
+    data:
       msg: >-
         News Feed: {{ trigger.event.data.title }}.... {{
         trigger.event.data.summary }}
@@ -317,4 +379,3 @@ mode: single
 Send messages from NodeRed
 ---------------------------------
 Import file node_red_flow.json into nodered.
-
