@@ -98,7 +98,7 @@ URL Argument / MQTT JSON Parameters:
 ---------------------------------
 ```
 MSG -> Message to display on dot matrix
-REP -> Number of times the message scrolls horizzontally across the dot matrix
+REP -> Number of times the message scrolls horizontally across the dot matrix
 BUZ -> Number of times the buzzer makes a sound (chirps) in repeated succession
 DEL -> Delay in millisecond for each scrolling step (speed of scrolling message)
 ASC -> ASCII coversion to enable correct translation of UTF8 Extended ASCII Characters
