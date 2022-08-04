@@ -38,7 +38,7 @@ Key Features:
 * HTTP webserver / message baord web interface
 * Send messages via HTTP using automation systems or scripts -> uri parameters or json small api
 * Send messages via MQTT Server (Authenticated or Anonymous)
-* Supper for UTF8 Extended ASCII Characters (see https://www.utf8-chartable.de/)
+* Support for UTF8 Extended ASCII Characters (see https://www.utf8-chartable.de/)
 * Change/Store HTTP credentials
 * Change/Store MQTT Config (enable/disable MQTT and connect/disconnect alerting)
 * MDNS Supported (browse and send messages via http to mdns name (eg. ESP-MSG-ABCDEF.local) or to selected IP address (future improvement ability to change hostname)
