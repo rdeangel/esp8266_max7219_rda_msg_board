@@ -73,7 +73,7 @@ Web Interface
 
 ![mqtt_config](images/mqtt_config.jpg)
 
-![password_change](images/password_change.jpg)
+![password_change](images/update_firmware.jpg)
 
 
 
