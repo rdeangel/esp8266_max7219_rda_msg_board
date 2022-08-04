@@ -121,8 +121,8 @@ and will also publish to "mdns_name/status" although this by default has no use
 Example
 ```
 Restoring MQTT connection...
-ESP-MSG-6A2F74 connected to MQTT Server: 192.168.1.100:1883
-Publishing to topic ESP-MSG-6A2F74/status: connected
+ESP-MSG-ABCDEF connected to MQTT Server: 192.168.1.100:1883
+Publishing to topic ESP-MSG-ABCDEF/status: connected
 Subscribe to topic: rdadotmatrix
 Subscribe to topic: rdadotmatrix/json
 Subscribe to topic: rdadotmatrix/generic
@@ -141,7 +141,7 @@ for example if you configure topic prefix as rdadotmatrix/generic/# you would ge
 ```
 Restoring MQTT connection...
 ESP-MSG-ABCDEF connected to MQTT Server: 192.168.1.100:1883
-Publishing to topic ESP-MSG-6A2F74/status: connected
+Publishing to topic ESP-MSG-ABCDEF/status: connected
 Subscribe to topic: rdadotmatrix
 Subscribe to topic: rdadotmatrix/json
 Subscribe to topic: rdadotmatrix/generic/#
