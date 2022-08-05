@@ -353,7 +353,8 @@ rest_command:
 ```
 
 or even better using MQTT configure a script
-Please Note: it is important you use /json at the end of the topic which no matter what is alwasy one of the MQTT topic the board subscribes to)
+Please Note: it is important you use /json at the end of the topic. 
+Topics ending with /json are automatically subscribed regardless of the configure topic prefix.
 
 ```
 alias: Feed To Dot Matrix MQTT
