@@ -55,7 +55,7 @@ Character you can display as arguments
 !"$'()*,-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£€¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ
 ```
 Characters that can't always be send as part of a message (with exception on nodered where all characters can be used):
-```
+``` 
 #%&+;
 ```
 
@@ -65,7 +65,22 @@ Board Wiring
 ---------------------------------
 ![wiring](images/wiring.gif)
 
+Specify number of LED modules used (See 01_Shared.h): 
+```
+#define MAX_DEVICES 4
+```
 
+Pinout Code Changes (See 01_Shared.h):
+```
+#define CLK_PIN D5 // or SCK
+#define DATA_PIN D7 // or MOSI
+#define CS_PIN D8
+```
+
+Define which pin is connected to the Buzzer (See 01_Shared.h):
+```
+#define BUZZER D1
+```
 
 Web Interface
 ---------------------------------
@@ -353,10 +368,12 @@ rest_command:
       authorization: !secret dot_matrix_secret_header
 ```
 
-or even better using MQTT configure a script
+Or you can use MQTT.
+
 Please Note: it is important you use /json at the end of the topic. 
 Topics ending with /json are automatically subscribed regardless of the configure topic prefix.
 
+Configure the following script:
 ```
 alias: Feed To Dot Matrix MQTT
 sequence:
