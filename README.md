@@ -20,7 +20,9 @@ The board will reboot and should now boot in "Wifi Message Mode".
 
 Connect to your wifi network and look for the IP the board obtained from DHCP (it should display it once at the end of the first message upon boot).
 
-I suggest statically assigning an IP on your DHCP so the board always uses the same IP and can be easily accessed. (This is not important for MQTT Messaging but it is for HTTP Web Interface/Messaging)
+I suggest statically assigning an IP on your DHCP so the board always uses the same IP and can be easily accessed. (This is not important for MQTT Messaging but it is for HTTP Web Interface/Messaging).
+
+You can also use the hostname in mdns format ESP-MSG-ABCDEF.local instead of the IP address.
 
 
 Default username and password:
