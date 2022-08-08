@@ -109,8 +109,7 @@ ASC -> ASCII coversion to enable correct translation of UTF8 Extended ASCII Char
 
 MQTT Topic Publishing/Subscribing
 ---------------------------------
-If you enter the following Topic Prefix as part of your MQTT config the following log message can be seen from console if "#define DEBUG 1"
-Entering the topic prefix will register:
+If you enter the following Topic Prefix "rdadotmatrix/generic" as part of your MQTT config, the following log message can be seen from console if "#define DEBUG 1" is defined:
 ```
 root_topic
 root_topic/json 
@@ -118,7 +117,7 @@ root_topic/topic
 root_topic/topic/json
 mdns_name
 mdns_name/json
-and will also publish to "mdns_name/status" although this by default has no use
+and will also publish "connected" to "mdns_name/status" although this by default has no use and it's for you to choose or not.
 ```
 Example
 ```
@@ -139,7 +138,7 @@ Please Note:
 
 it is also possible to use # for wildcard (at the end of a topic only), and + as part of a topic to indicate part of a topic path as a wildcard.
 
-for example if you configure topic prefix as rdadotmatrix/generic/# you would get the following topic subscriptions:
+for example if you configure topic prefix as "rdadotmatrix/generic/#" you would get the following topic subscriptions:
 ```
 Restoring MQTT connection...
 ESP-MSG-ABCDEF connected to MQTT Server: 192.168.1.100:1883
@@ -150,7 +149,7 @@ Subscribe to topic: rdadotmatrix/generic/#
 Subscribe to topic: ESP-MSG-ABCDEF
 Subscribe to topic: ESP-MSG-ABCDEF/json
 ```
-Please Note: even with a wildcard you would still be able to publish messages with parameters to a topic such as rdadotmatrix/generic/whatever/json or rdadotmatrix/generic/whatever/anotherlevel/json
+Please Note: with a wildcard "#" at the end of the topic you would still be able to publish messages with parameters to a topic such as rdadotmatrix/generic/whatever/json or rdadotmatrix/generic/whatever/anotherlevel/json or any other long multilevel topic.
 
 
 
