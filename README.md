@@ -42,7 +42,7 @@ password: esp8266
 
 Key Features:
 ---------------------------------
-* HTTP webserver / message baord web interface
+* HTTP webserver / message board web interface
 * Send messages via HTTP using automation systems or scripts ("URI" or "Json api" parameters supported) 
 * Send messages via MQTT Server (User Authentication or Anonymous) ("Json" parameters or "Plain" messages supported)
 * Support for UTF8 Extended ASCII Characters (see https://www.utf8-chartable.de/)
