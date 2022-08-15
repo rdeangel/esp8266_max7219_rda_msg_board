@@ -184,7 +184,7 @@ Subscribe to topic: ESP-MSG-ABCDEF/json
 ```
 
 Please Note:
-1. Any message published to a subscribed topic ending with /json will require a json message with the 5 parameters passed above.
+1. Any message published to a subscribed topic ending with /json will require a json message with any number of parameters passed above (MSG is mandatory to display a message).
 2. Any message published to a subscribed topic NOT ending with /json will take a message as a plain string with no additional parameter. (hard coded default parameters will be used, in future configurable I hope).
 
 it is also possible to use # for wildcard (at the end of a topic only), and + as part of a topic to indicate part of a topic path as a wildcard.
