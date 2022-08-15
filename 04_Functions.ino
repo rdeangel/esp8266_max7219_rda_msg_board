@@ -115,11 +115,153 @@ void utf8Ascii(char* s) {
 //#endif
 //}
 
+//Message send based on http URL argument request
+void onMessageCallHttp(void) {
+  String message = "\nReceived request:\n";
+  message += "URI: ";
+  message += serverHttp.uri();
+  message += "\nMethod: ";
+  message += (serverHttp.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += serverHttp.args();
+  message += "\n";
+  bool messageArg = false;
+  for (uint8_t i = 0; i < serverHttp.args(); i++) {
+    message += " " + serverHttp.argName(i) + ": " + serverHttp.arg(i) + "\n";
+    if (serverHttp.argName(i) == "MSG") {
+      repeatCount = 0;
+      serverHttp.arg(i).toCharArray(newMessage, MSG_SIZE);
+      newMessageAvailable = true;
+      messageArg = true;
+    }
+    if (serverHttp.argName(i) == "REP") {
+      serverHttp.arg(i).toCharArray(newRepeat, REP_SIZE);
+      newRepeatAvailable = true;
+    }
+    if (serverHttp.argName(i) == "BUZ") {
+      serverHttp.arg(i).toCharArray(newBuz, BUZ_SIZE);
+      newBuzAvailable = true;
+    }
+    if (serverHttp.argName(i) == "DEL") {
+      serverHttp.arg(i).toCharArray(newDelay, DEL_SIZE);
+      newDelayAvailable = true;
+    }
+    if (serverHttp.argName(i) == "BRI") {
+      serverHttp.arg(i).toCharArray(newBrightness, DEL_SIZE);
+      newBrightnessAvailable = true;
+    }
+    if (serverHttp.argName(i) == "ASC") {
+      serverHttp.arg(i).toCharArray(newAsciiConv, ASC_SIZE);
+      newAsciiConvAvailable = true;
+    }
+  }
+  if (!messageArg) {
+    strcpy(newMessage, "");
+    newMessageAvailable = true;
+  }
+  if (!newRepeatAvailable) {
+    strcpy(newRepeat, repeatDefault);
+    newRepeatAvailable = true;
+  }
+  if (!newBuzAvailable) {
+    strcpy(newBuz, buzzerDefault);
+    newBuzAvailable = true;
+  }
+  if (!newDelayAvailable) {
+    strcpy(newDelay, scrollDelayDefault);
+    newDelayAvailable = true;
+  }
+  if (!newBrightnessAvailable) {
+    strcpy(newBrightness, ledBrightnessDefault);
+    newBrightnessAvailable = true;
+  }
+  if (!newAsciiConvAvailable) {
+    strcpy(newAsciiConv, asciiConvDefault);
+    newAsciiConvAvailable = true;
+  }
+  Serial.println(message);
+  showWebpageHttp();
+}
+
+void onMessageCallJson(String jsonMsgData){
+  char data[MSG_JSON_SIZE];
+  strcpy(data, jsonMsgData.c_str());
+
+  StaticJsonDocument<MSG_JSON_SIZE> doc;
+  Serial.println("Json Message Data Received: ");
+  Serial.println(data);
+
+  auto error = deserializeJson(doc, data);
+  if (error) {
+    Serial.print(F("deserializeJson() failed with code "));
+    Serial.println(error.c_str());
+    return;
+  }
+
+  String MSG = doc["MSG"];
+  String REP = doc["REP"];
+  String BUZ = doc["BUZ"];
+  String DEL = doc["DEL"];
+  String BRI = doc["BRI"];
+  String ASC = doc["ASC"];
+
+  if (doc.containsKey("MSG") == true) {
+    MSG.toCharArray(newMessage, MSG_SIZE);
+    newMessageAvailable = true;
+    repeatCount = 0;
+  } else { 
+    strcpy(newMessage, "");
+    newMessageAvailable = true;
+  } 
+
+  if (doc.containsKey("REP") == true) {
+    REP.toCharArray(newRepeat, REP_SIZE);
+    repeatCount = 0;
+    newRepeatAvailable = true;
+  } else { 
+    strcpy(newRepeat, repeatDefault);
+    newRepeatAvailable = true;
+  } 
+
+  if (doc.containsKey("BUZ") == true) {
+    BUZ.toCharArray(newBuz, BUZ_SIZE);
+    newBuzAvailable = true;
+  } else {
+    strcpy(newBuz, buzzerDefault);
+    newBuzAvailable = true;
+  }
+
+  if (doc.containsKey("DEL") == true) {
+    DEL.toCharArray(newDelay, DEL_SIZE);
+    newDelayAvailable = true;
+  } else {
+    strcpy(newDelay, scrollDelayDefault);
+    newDelayAvailable = true;
+  }
+
+  if (doc.containsKey("BRI") == true) {
+    BRI.toCharArray(newBrightness, DEL_SIZE);
+    newBrightnessAvailable = true;
+  } else {
+    strcpy(newBrightness, ledBrightnessDefault);
+    newBrightnessAvailable = true;
+  }
+  
+  if (doc.containsKey("ASC") == true) {
+    ASC.toCharArray(newAsciiConv, ASC_SIZE);
+    newAsciiConvAvailable = true;
+  } else {
+    strcpy(newAsciiConv, asciiConvDefault);
+    newAsciiConvAvailable = true;
+  }
+
+}
+
 void displayText() {
   strcpy(curMessage, newMessage); // copy it in
   M[0].msg = curMessage;
   
-  if (atoi(newAsciiconv) == 1) {
+  if (atoi(newAsciiConv) == 1) {
     utf8Ascii(M[0].msg);
   }
   
@@ -129,6 +271,7 @@ void displayText() {
   PRINT("\nCurrent Repeat: ", repeatCount);
   PRINT("\nRequested Repeats: ", newRepeat);
   P.displayText(M[0].msg, PA_CENTER, scrollDelay, PAUSE_TIME, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+  P.setIntensity(ledBrightness);
   P.setTextBuffer(M[0].msg);
   P.setCharSpacing(M[0].spacing);
   P.displayReset();
@@ -140,6 +283,10 @@ void scrollTextParola() {
   if (newDelayAvailable) {
     scrollDelay = atoi(newDelay);
     newDelayAvailable = false;
+  }
+  if (newBrightnessAvailable) {
+    ledBrightness = atoi(newBrightness);
+    newBrightnessAvailable = false;
   }
   p = curMessage;      // reset the pointer to start of message
   if (newMessageAvailable) { // there is a new message waiting
@@ -161,8 +308,8 @@ void scrollTextParola() {
             delay(10);
             digitalWrite(BUZZER, LOW);
             delay(10);
-            newBuzAvailable = false;
           }
+          newBuzAvailable = false;
         }
         else {
           if ((atoi(newRepeat) == 0)  && (firstMessage == false)) {
@@ -171,6 +318,7 @@ void scrollTextParola() {
           }
           else {
             repeatCount = atoi(newRepeat);
+            //newRepeatAvailable = false;
           }
         }
       }
@@ -191,17 +339,25 @@ void scrollTextParola() {
       }
     }
   }
+  if (newRepeatAvailable) {
+    newRepeatAvailable = false;
+  }
+  if (newAsciiConvAvailable) {
+    newAsciiConvAvailable = false;
+  }
 }
 
 void displaySilentMsg() {
   repeatCount = 0;
   strcpy(newRepeat, "1");
   strcpy(newBuz, "0");
-  strcpy(newAsciiconv, "1");
+  strcpy(newBrightness, ledBrightnessDefault);
+  strcpy(newAsciiConv, asciiConvDefault);
   newRepeatAvailable = true;
   newMessageAvailable = true;
   newBuzAvailable = true;
-  newAsciiconvAvailable = true;
+  newBrightnessAvailable = true;
+  newAsciiConvAvailable = true;
   PRINT("\nSilent text to scroll: \n", newMessage);
   while(!firstMessageOff) {
     scrollTextParola();

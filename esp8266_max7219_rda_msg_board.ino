@@ -1,5 +1,5 @@
 //MAX7219 RDA Message Board Version
-#define VERSION "v2022.08.01.nmcu"
+#define VERSION "v2022.08.15.4m-nmcu"
 //Tested on "ESP8266 Boards (3.0.2) / NodeMCU 1.0 (ESP12E-Module)"
 //Also tested on "D1 Mini"
 

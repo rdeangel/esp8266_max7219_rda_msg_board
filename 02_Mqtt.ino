@@ -10,47 +10,11 @@ void plainMsgFunct(String plainMsgString) {
   newBuzAvailable = true;
   strcpy(newDelay, scrollDelayDefault);
   newDelayAvailable = true;
-  strcpy(newAsciiconv, "1");
-  newAsciiconvAvailable = true;
-}
-
-//processes json messages
-void jsonMsgFunct(String jsonMsgString) {
-  char data[MSG_JSON_SIZE];
-  strcpy(data, jsonMsgString.c_str());
-  PRINT("\nMQTT JSON Message Arrived!\nMQTT Message: ", data);
-  StaticJsonDocument<MSG_JSON_SIZE> doc;
-  
-  auto error = deserializeJson(doc, data);
-  if (error) {
-    Serial.print(F("deserializeJson() failed with code "));
-    Serial.println(error.c_str());
-    return;
-  }
-
-  String MSG = doc["MSG"];
-  String REP = doc["REP"];
-  String BUZ = doc["BUZ"];
-  String DEL = doc["DEL"];
-  String ASC = doc["ASC"];
-  
-  //MSG.replace("'", "\u0027");
-  
-  MSG.toCharArray(newMessage, MSG_SIZE);
-  newMessageAvailable = true;
-  
-  REP.toCharArray(newRepeat, REP_SIZE);
-  repeatCount = 0;
-  newRepeatAvailable = true;
-  
-  BUZ.toCharArray(newBuz, BUZ_SIZE);
-  newBuzAvailable = true;
-  
-  DEL.toCharArray(newDelay, DEL_SIZE);
-  newDelayAvailable = true;
-  
-  ASC.toCharArray(newAsciiconv, ASC_SIZE);
-  newAsciiconvAvailable = true;
+  strcpy(newBrightness, ledBrightnessDefault);
+  newBrightnessAvailable = true;
+  //strcpy(newAsciiConv, "1");
+  strcpy(newAsciiConv, asciiConvDefault);
+  newAsciiConvAvailable = true;
 }
 
 //function called when an MQTT message is received
@@ -70,14 +34,11 @@ void mqttCallBack(const char *topic, byte *payload, unsigned int length) {
   //matches when messages come in with topic ending in /json and when topic configured is NOT wildcard #
   else if ((String(topic).startsWith((String(mqttTopicPrefix))) && ((String(topic).endsWith("/json")) == true)) ||
   ((String(topic).startsWith(String(mqttTopicRoot))) && ((String(topic).endsWith("/json")) == true)) ||
-  ((String(topic).startsWith(String(mqttTopicDevice))) && ((String(topic).endsWith("/json")) == true))) {
-    jsonMsgFunct(PayloadString);
+  ((String(topic).startsWith(String(mqttTopicDevice))) && ((String(topic).endsWith("/json")) == true)) ||
+  ((String(topic).endsWith("/json")) == true)) {
+    PRINTS("\nMQTT JSON Message Arrived!\nMQTT Message: ");
+    onMessageCallJson(PayloadString.c_str());
   }
-  //matches when message come in with topic ending in /json and when topic is wildcard #
-  else if ((String(topic).endsWith("/json")) == true) {
-    jsonMsgFunct(PayloadString);
-  }
-  //matches when message come in with topic NOT ending in /json and when topic is wildcard #
   else {
     plainMsgFunct(PayloadString);
   }

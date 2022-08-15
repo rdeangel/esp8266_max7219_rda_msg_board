@@ -3,7 +3,8 @@ void setMainPageVars() {
   + clientId + String("</clientid><repeat>") 
   + String(repeatDefault) + String("</repeat><buzzer>") 
   + String(buzzerDefault) + String("</buzzer><delay>") 
-  + String(scrollDelayDefault) + String("</delay><version>") 
+  + String(scrollDelayDefault) + String("</delay><brightness>") 
+  + String(ledBrightnessDefault) + String("</brightness><version>") 
   + String(version) + String("</version></data>");
 }
 
@@ -194,82 +195,6 @@ void usernamePasswordHttp() {
   Serial.println(message);
 }
 
-void onMessageCallHttp(void) {
-  String message = "\nReceived request:\n";
-  message += "URI: ";
-  message += serverHttp.uri();
-  message += "\nMethod: ";
-  message += (serverHttp.method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += serverHttp.args();
-  message += "\n";
-  for (uint8_t i = 0; i < serverHttp.args(); i++) {
-    message += " " + serverHttp.argName(i) + ": " + serverHttp.arg(i) + "\n";
-    if (serverHttp.argName(i) == "MSG") {
-      serverHttp.arg(i).toCharArray(newMessage, MSG_SIZE);
-      newMessageAvailable = true;
-    }
-    if (serverHttp.argName(i) == "REP") {
-      serverHttp.arg(i).toCharArray(newRepeat, REP_SIZE);
-      repeatCount = 0;
-      newRepeatAvailable = true;
-    }
-    if (serverHttp.argName(i) == "BUZ") {
-      serverHttp.arg(i).toCharArray(newBuz, BUZ_SIZE);
-      newBuzAvailable = true;
-    }
-    if (serverHttp.argName(i) == "DEL") {
-      serverHttp.arg(i).toCharArray(newDelay, DEL_SIZE);
-      newDelayAvailable = true;
-    }
-    if (serverHttp.argName(i) == "ASC") {
-      serverHttp.arg(i).toCharArray(newAsciiconv, ASC_SIZE);
-      newAsciiconvAvailable = true;
-    }
-  }
-  Serial.println(message);
-  showWebpageHttp();
-}
-
-void serverHttp_post_api() {
-  char data[MSG_JSON_SIZE];
-  strcpy(data, serverHttp.arg("plain").c_str());
-  StaticJsonDocument<MSG_JSON_SIZE> doc;
-  Serial.println("");
-  Serial.println(data);
-
-  auto error = deserializeJson(doc, data);
-  if (error) {
-    Serial.print(F("deserializeJson() failed with code "));
-    Serial.println(error.c_str());
-    return;
-  }
-
-  String MSG = doc["MSG"];
-  String REP = doc["REP"];
-  String BUZ = doc["BUZ"];
-  String DEL = doc["DEL"];
-  String ASC = doc["ASC"];
-
-  MSG.toCharArray(newMessage, MSG_SIZE);
-  newMessageAvailable = true;
-  
-  REP.toCharArray(newRepeat, REP_SIZE);
-  repeatCount = 0;
-  newRepeatAvailable = true;
-  
-  BUZ.toCharArray(newBuz, BUZ_SIZE);
-  newBuzAvailable = true;
-  
-  DEL.toCharArray(newDelay, DEL_SIZE);
-  newDelayAvailable = true;
-  
-  ASC.toCharArray(newAsciiconv, ASC_SIZE);
-  newAsciiconvAvailable = true;
-
-  serverHttp.send(204,"");
-}
-
 void showChangeMqttConfigHttp() {
   String s = CHANGEMQTTCONFIG_page; //Read HTML contents
   serverHttp.send(200, "text/html", s); //Send web page
@@ -380,7 +305,9 @@ void httpWebDirDef(){
     if (!serverHttp.authenticate(web_username, web_password)) {
       return serverHttp.requestAuthentication();
     }
-    serverHttp_post_api();
+    PRINTS("\nHTTP JSON Message Arrived!\nHTTP Message: ");
+    onMessageCallJson(serverHttp.arg("plain").c_str());
+    serverHttp.send(204,"");
   });  
   serverHttp.on("/changeuserpass", [](){
     if (!serverHttp.authenticate(web_username, web_password)) {

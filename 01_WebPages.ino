@@ -14,14 +14,13 @@ html, body {
   border-radius: 8px;
   color: black;
   width: 90%;
-  height: 100%;
+  height: 440px;
   margin-left: auto;
   margin-right: auto;
   margin-top: 20px;
   border: solid 2px;
   padding: 10px;
   background-color: #9f9fa6;
-  padding: 10px;
   position: centre;
   text-align: center;
 }
@@ -67,6 +66,7 @@ label {
   text-decoration: none;
   text-transform: none;
   color: black;
+  padding: 10px;
 }
 input {
   text-align: center;
@@ -129,6 +129,38 @@ input[type=submit]:active {
 .pill-nav a.firmware:hover {
   color: #ff3347;
 }
+.slidecontainer {
+  width: 100%;
+}
+.slider {
+  -webkit-appearance: none;
+  width: 300px;
+  height: 10px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+.slider:hover {
+  opacity: 1;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #32ba39;
+  cursor: pointer;
+  border: 1px solid #eee;
+}
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #32ba39;
+  cursor: pointer;
+  border: 1px solid #eee;
+}
 </style>
 <script>
 function SendText() {
@@ -137,8 +169,9 @@ function SendText() {
   repeat = "&REP=" + document.getElementById("txt_form").REP.value;
   buzzer = "&BUZ=" + document.getElementById("txt_form").BUZ.value;
   delay = "&DEL=" + document.getElementById("txt_form").DEL.value;
+  brightness = "&BRI=" + document.getElementById("txt_form").BRI.value;
   asciiconv = "&ASC=0";
-  request.open("GET", "arg?" + msg + repeat + buzzer + delay + asciiconv, false);
+  request.open("GET", "arg?" + msg + repeat + buzzer + delay + brightness + asciiconv, false);
   request.send(null);
 }
 function getData() {
@@ -147,19 +180,54 @@ function getData() {
   parser = new DOMParser();
   request.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
+
+	  var clientid_text = document.getElementById("clientid_val");
+	  var version_text = document.getElementById("version_val");
+      var rep_slider = document.getElementById("REP");
+      var rep_label = document.getElementById("REP_LABEL");
+      var buz_slider = document.getElementById("BUZ");
+      var buz_label = document.getElementById("BUZ_LABEL");
+      var del_slider = document.getElementById("DEL");
+      var del_label = document.getElementById("DEL_LABEL");
+      var bri_slider = document.getElementById("BRI");
+      var bri_label = document.getElementById("BRI_LABEL");
+
       xmlDoc = parser.parseFromString(this.responseText,"text/xml");
-      document.getElementById("clientid_val").innerHTML = 
+	  
+      clientid_text.innerHTML = 
       xmlDoc.getElementsByTagName("clientid")[0].childNodes[0].nodeValue;
-      document.getElementById("version_val").innerHTML = 
+      version_text.innerHTML = 
       xmlDoc.getElementsByTagName("version")[0].childNodes[0].nodeValue;
-      document.getElementById("txt_form").REP.value = 
+      rep_slider.value = 
       xmlDoc.getElementsByTagName("repeat")[0].childNodes[0].nodeValue;
-      document.getElementById("txt_form").BUZ.value = 
+      buz_slider.value = 
       xmlDoc.getElementsByTagName("buzzer")[0].childNodes[0].nodeValue;
-      document.getElementById("txt_form").DEL.value = 
+      del_slider.value = 
       xmlDoc.getElementsByTagName("delay")[0].childNodes[0].nodeValue;
-	  }
-  };
+      bri_slider.value = 
+      xmlDoc.getElementsByTagName("brightness")[0].childNodes[0].nodeValue;
+
+      rep_label.innerHTML = rep_slider.value;
+      rep_slider.oninput = function() {
+        rep_label.innerHTML = this.value;
+      }
+
+      buz_label.innerHTML = buz_slider.value;
+      buz_slider.oninput = function() {
+        buz_label.innerHTML = this.value;
+      }
+
+      del_label.innerHTML = del_slider.value;
+      del_slider.oninput = function() {
+        del_label.innerHTML = this.value;
+      }
+
+      bri_label.innerHTML = bri_slider.value;
+      bri_slider.oninput = function() {
+        bri_label.innerHTML = this.value;
+      }
+	}
+  }
   request.open("GET", "mainpagevars", true);
   request.send();
 }
@@ -172,9 +240,10 @@ getData();
 <form id="txt_form" name="frmText">
 <br/>
 <label>Message</label><input type="text" class="msg-field" id="MSG" maxlength="999">
-<label>Repeat</label><input type="text" class="small-field" id="REP" maxlength="3" size="3">
-<label>Buzzer</label><input type="text" class="small-field" id="BUZ" maxlength="3" size="3">
-<label>Delay</label><input type="text" class="small-field" id="DEL" maxlength="3" size="3">
+<label>Repeat: <span id="REP_LABEL"></span></label><input type="range" class="slider" min="0" max="100" id="REP">
+<label>Buzzer: <span id="BUZ_LABEL"></span></label><input type="range" class="slider" min="0" max="100" id="BUZ">
+<label>Delay: <span id="DEL_LABEL"></span></label><input type="range" class="slider" min="0" max="100" id="DEL">
+<label>Brightness: <span id="BRI_LABEL"></span></label><input type="range" class="slider" min="0" max="15" id="BRI">
 </br>
 </form>
 <br>
@@ -213,7 +282,7 @@ html, body {
   border-radius: 8px;
   color: black;
   width: 90%;
-  height: 100%;
+  height: 180px;
   margin-left: auto;
   margin-right: auto;
   margin-top: 20px;
@@ -271,9 +340,10 @@ input.msg-field {
   width: 70%;
 }
 input[type=file] {
+  text-align: left;
   background-color: grey;
-  color: black;
-  width: 600px;
+  color: #ffff00;;
+  width: 90%;
 }
 input[type=submit] {
   background-color: #04AA6D;
@@ -286,6 +356,38 @@ input[type=submit]:hover {
 }
 input[type=submit]:active {
   background-color: #32ba39;
+  transform: translateY(4px);
+}
+.buttons button {
+  display: inline-block;
+  color: #eee;
+  border: 2px solid #ccc;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 5px;
+  background-color: grey;
+  color: white;
+  width: 150px;
+  height: 30px;
+}
+.buttons button.wipe_all_config {
+  background-color: #f0200b;
+}
+.buttons button.wipe_all_config:hover {
+  background-color: #f73604;
+}
+.buttons button.wipe_all_config:active {
+  background-color: #f73604;
+  transform: translateY(4px);
+}
+.buttons button.reset_only {
+  background-color: #0478f7;
+}
+.buttons button.reset_only:hover {
+  background-color: #04bcf7;
+}
+.buttons button.reset_only:active {
+  background-color: #04bcf7;
   transform: translateY(4px);
 }
 .pill-nav a {
@@ -346,8 +448,13 @@ getData();
 <br><br>
 <input type='submit' value='Update'>
 </form>
+</br>
+<div class="buttons">
+<button onclick="location.href='factoryreset'" class="wipe_all_config" type="button">Wipe All Config</button>
+&nbsp&nbsp&nbsp&nbsp
+<button onclick="location.href='reboot'" class="reset_only" type="button">Reboot Device</button>
 </div>
-<br>
+</br></br></br>
 <div class="pill-nav">
   <a href="/"> Home</a>
   <a href="/changemqttconfig"> MQTT Configuration</a>
@@ -551,7 +658,7 @@ getData();
 const char CHANGEMQTTCONFIG_page[] PROGMEM = R"=====(<!DOCTYPE html>
 <html>
 <head><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MAX7219 RDA - MQTT Config Change</title>
+<title>MAX7219 RDA - MQTT Config</title>
 <style>
 html, body {
   color: #ebebed;
@@ -774,7 +881,7 @@ function init() {
 </script>
 </head>
 <body onload="init()">
-<H1><b>MAX7219 RDA - MQTT Config Change</b></H1> 
+<H1><b>MAX7219 RDA - MQTT Config</b></H1> 
 
 <div id="mqttconfig_container"> 
 <form id="txt_form" name="frmText" method="post" action="applymqttconfig"></br>

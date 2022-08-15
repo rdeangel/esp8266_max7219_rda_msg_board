@@ -122,6 +122,7 @@ msgDef_t  M[] = { { 1, "" } };
 #define REP_SIZE 4
 #define BUZ_SIZE 4
 #define DEL_SIZE 4
+#define BRI_SIZE 4
 #define ASC_SIZE 4
 
 String version = VERSION;
@@ -161,19 +162,24 @@ char repeatDefault[REP_SIZE] = "10";
 char newBuz[BUZ_SIZE];
 char buzzerDefault[BUZ_SIZE] = "10";
 char newDelay[DEL_SIZE];
-char scrollDelayDefault[DEL_SIZE] = "35"; 
-char newAsciiconv[ASC_SIZE];
+char scrollDelayDefault[DEL_SIZE] = "35";
+char newBrightness[BRI_SIZE];
+char ledBrightnessDefault[BRI_SIZE] = "7";
+char newAsciiConv[ASC_SIZE];
+char asciiConvDefault[ASC_SIZE] = "1";
 bool firstMessage = true;
 bool firstMessageOff = false;
 bool newMessageAvailable = false;
 bool newRepeatAvailable = false;
 bool newBuzAvailable = false;
 bool newDelayAvailable = false;
-bool newAsciiconvAvailable = false;
+bool newBrightnessAvailable = false;
+bool newAsciiConvAvailable = false;
 bool endSetupModeMsg = false;
 bool afterWiFiConfig = false;
 char assignedIP[255];
 int scrollDelay = atoi(scrollDelayDefault);
+int ledBrightness = atoi(ledBrightnessDefault);
 int repeatCount = 0;
 IPAddress apModeIP;
 String apModeSSID;
