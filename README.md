@@ -1,3 +1,32 @@
+> [!IMPORTANT]  
+> ## 🚀 PROJECT RELOCATED & REVAMPED
+> 
+> **This repository is the legacy Arduino IDE version and is no longer actively maintained.**  
+> The project has been completely refactored and moved to a new repository:  
+> 👉 **[rdeangel/rda_msg_board](https://github.com/rdeangel/rda_msg_board)**
+> 
+> ### What's New?
+> - **Modernized Toolchain:** Migrated from a monolithic Arduino IDE `.ino` script to a clean, modular **PlatformIO (VS Code)** environment with automated dependency management and multi-environment CI builds.
+> - **Exciting New Features:** Added a complete Configuration Export/Import (Backup) system, custom default parameters, an advanced Clock/Timer mode, Sleep Mode scheduling, and Secure MQTT (TLS/SSL) for the ESP32.
+> - **Home Assistant Auto-Discovery:** Now supports complete, zero-configuration setup natively via MQTT, alongside the legacy manual REST strategies.
+> - **Pre-compiled Releases:** GitHub Actions now automatically provides ready-to-flash binaries for out-of-the-box setups (4x and 8x display module variants).
+> 
+> ### 100% Backward Compatible 
+> Upgrading to the new version requires **no changes** to your existing automations! The new firmware maintains strict drop-in compatibility for existing implementations:
+> - **HTTP APIs** (`/arg` and `/api`) use the exact same parameters (`MSG`, `REP`, `DEL`, `BUZ`, `BRI`, etc.).
+> - **MQTT Integration** structures, topics, wildcards, and JSON payload formats are completely unchanged.
+> - **Web Interface** retains the same conceptual flow while being visually refreshed and optimized.
+> - **Hardware** wiring and pin configurations remain fully compatible out-of-the-box.
+>
+> **[Click here to visit the new repository for the latest code and firmware releases!](https://github.com/rdeangel/rda_msg_board)**
+
+---
+
+# MAX7219 RDA Message Board
+This is an ESP8266 based message board and it has been mainly put together to display scrolling messages...
+*(continue with the rest of the old README)*
+
+
 esp8266_max7219_rda_msg_board
 ============================================================
 MAX7219 RDA Message Board
@@ -495,3 +524,4 @@ npm_packages:
   - node-red-contrib-simple-message-queue
   - node-red-node-feedparser
 ```
+
